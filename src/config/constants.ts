@@ -1,0 +1,1 @@
+export const  SOL_SPOT_MARKET_INDEX = 1;
