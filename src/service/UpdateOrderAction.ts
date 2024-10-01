@@ -24,8 +24,8 @@ export function processUpdateOrder(orderAction: ExtendedOrderActionRecord) {
         fill: {
           side: orderAction.takerOrderDirection ? positionDirectionToString(orderAction.takerOrderDirection) : null,
           fee: orderAction.makerFee?.toNumber().toString(),
-          amount: orderAction.baseAssetAmountFilled?(orderAction.baseAssetAmountFilled.toNumber() / BASE_PRECISION.toNumber()).toString() : null,
-          price: null, //todo
+          amount: orderAction.baseAssetAmountFilled?(orderAction.baseAssetAmountFilled.toNumber() / BASE_PRECISION.toNumber()).toString() : 0,
+          price: 0, //todo
           oraclePrice: (orderAction.oraclePrice.toNumber() / PRICE_PRECISION.toNumber()).toString(),
           orderId: orderAction.makerOrderId,
           marketIndex: orderAction.marketIndex,
@@ -35,10 +35,10 @@ export function processUpdateOrder(orderAction: ExtendedOrderActionRecord) {
           signature: orderAction.txSig,
           maker: orderAction.maker?.toString(),
           makerOrderId: orderAction.makerOrderId,
-          makerFee: orderAction.makerFee?(orderAction.makerFee.toNumber()/FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : null,
+          makerFee: orderAction.makerFee?(orderAction.makerFee.toNumber()/FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : 0,
           taker: orderAction.taker?.toString(),
           takerOrderId: orderAction.takerOrderId,
-          takerFee: orderAction.takerFee?(orderAction.takerFee.toNumber()/FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : null,
+          takerFee: orderAction.takerFee?(orderAction.takerFee.toNumber()/FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : 0,
         }
       };
     }

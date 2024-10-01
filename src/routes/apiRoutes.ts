@@ -3,14 +3,20 @@ import { DriftEnv } from '@drift-labs/sdk';
 import { Router } from 'express';
 import { OrderCreator } from '../service/OrderCreator';
 import { getAllPositions } from '../service/PositionService';
-import { SOL_SPOT_MARKET_INDEX } from '../config/constants';
 
 const router = Router();
 
 // GET request that doesn't require any parameters
 router.get('/data', (req, res) => {
   const driftClient = req.app.locals.driftClient as DriftClient;
-  res.json({subscribed: driftClient._isSubscribed})
+  if (driftClient) {
+    res.status(200).json({
+      subscribed: driftClient._isSubscribed,
+      message: driftClient._isSubscribed ? "Client is subscribed" : "Client is not subscribed",
+    });
+  } else {
+    res.status(500).json({ error: 'DriftClient not found' });
+  }
 }); 
 
 //places orders
@@ -33,12 +39,14 @@ router.post('/orders', (req, res) => {
     if (orderType === "limit") {
       const tx = OrderCreator.placeLimitOrder(driftClient, marketIndex, direction, amount, price);
       tx.then(result =>{
-        res.status(200).json({tx: result})
+        res.status(200).json({tx: result});
+        return;
       });
     } else if (orderType === "market") {
       const tx = OrderCreator.placeMarketOrder(driftClient, marketIndex, direction, amount);
       tx.then(result =>{
-        res.status(200).json({tx: result})
+        res.status(200).json({tx: result});
+        return;
       });
     }
   });
@@ -70,6 +78,10 @@ router.get("/positionInfo/:id", (req, res) => {
     return res.status(200).json({});
   }
 
+  if (!position) {
+    return res.status(404).json({ error: `Position with ID ${positionId} not found` });
+  }
+
   res.status(200).json({
     amount: (position.baseAssetAmount.toNumber() / BASE_PRECISION.toNumber()).toString(),
     averageEntry: position.quoteEntryAmount.toNumber().toString(),
@@ -84,22 +96,26 @@ router.get("/positionInfo/:id", (req, res) => {
 //returns all coins indexes and order requirements
 router.get('/markets', (req, res) => {
   const driftClient = req.app.locals.driftClient as DriftClient;
-  
-  const perpMarkets = driftClient.getPerpMarketAccounts();
-  const spotMarkets = driftClient.getSpotMarketAccounts();
-  const perpResult = perpMarkets.map(element => {
-    return {
+
+  if (!driftClient) {
+    return res.status(500).json({ error: 'DriftClient not found' });
+  }
+
+  try {
+    const perpMarkets = driftClient.getPerpMarketAccounts();
+    const spotMarkets = driftClient.getSpotMarketAccounts();
+
+    const perpResult = perpMarkets.map(element => ({
       marketIndex: element.marketIndex,
       symbol: String.fromCharCode(...element.name).trim(),
       priceStep: (element.amm.orderTickSize.toNumber() / QUOTE_PRECISION.toNumber()).toString(),
-      amountStep: (element.amm.orderStepSize.toNumber() /AMM_RESERVE_PRECISION.toNumber()).toString(),
+      amountStep: (element.amm.orderStepSize.toNumber() / AMM_RESERVE_PRECISION.toNumber()).toString(),
       minOrderSize: (element.amm.minOrderSize.toNumber() / BASE_PRECISION.toNumber()).toString(),
       initialMarginRatio: (element.marginRatioInitial / FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString(),
       maintenanceMarginRatio: (element.marginRatioMaintenance / FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString()
-    };
-  });
-  const spotResult = spotMarkets.map(element => {
-    return {
+    }));
+
+    const spotResult = spotMarkets.map(element => ({
       marketIndex: element.marketIndex.toString(),
       symbol: String.fromCharCode(...element.name).trim(),
       priceStep: (element.orderTickSize.toNumber() / QUOTE_PRECISION.toNumber()).toString(),
@@ -107,30 +123,33 @@ router.get('/markets', (req, res) => {
       minOrderSize: (element.minOrderSize.toNumber() / BASE_PRECISION.toNumber()).toString(),
       initialMarginRatio: null,
       maintenanceMarginRatio: null
-    };
-  });
-  res.status(200).json({
-    spot: spotResult,
-    perp: perpResult
-  });
+    }));
+
+    res.status(200).json({
+      spot: spotResult,
+      perp: perpResult
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
 });
 
+
 //cancels orders
-router.delete('/orders', (req, res) => {
+router.delete('/orders', async (req, res) => {
   const driftClient = req.app.locals.driftClient as DriftClient;
   const ids: number[] = req.body.ids;
-  
+
   if (!Array.isArray(ids)) {
-    return res.status(501).json({ error: 'Not Implemented' });
+    return res.status(400).json({ error: 'Invalid data: IDs should be an array' });
   }
 
-  driftClient.cancelOrdersByIds(ids)
-    .then(result => {
-      res.status(200).json({ tx: result });
-    })
-    .catch(error => {
-      res.status(500).json({ error: error.message });
-    });
+  try {
+    const result = await driftClient.cancelOrdersByIds(ids);
+    res.status(200).json({ message: 'Orders cancelled successfully', tx: result });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
 });
 
 export { router };

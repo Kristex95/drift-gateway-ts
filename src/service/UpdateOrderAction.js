@@ -26,8 +26,8 @@ function processUpdateOrder(orderAction) {
                 fill: {
                     side: orderAction.takerOrderDirection ? (0, DirectionTypeConverter_1.positionDirectionToString)(orderAction.takerOrderDirection) : null,
                     fee: (_a = orderAction.makerFee) === null || _a === void 0 ? void 0 : _a.toNumber().toString(),
-                    amount: orderAction.baseAssetAmountFilled ? (orderAction.baseAssetAmountFilled.toNumber() / sdk_1.BASE_PRECISION.toNumber()).toString() : null,
-                    price: null, //todo
+                    amount: orderAction.baseAssetAmountFilled ? (orderAction.baseAssetAmountFilled.toNumber() / sdk_1.BASE_PRECISION.toNumber()).toString() : 0,
+                    price: 0, //todo
                     oraclePrice: (orderAction.oraclePrice.toNumber() / sdk_1.PRICE_PRECISION.toNumber()).toString(),
                     orderId: orderAction.makerOrderId,
                     marketIndex: orderAction.marketIndex,
@@ -37,10 +37,10 @@ function processUpdateOrder(orderAction) {
                     signature: orderAction.txSig,
                     maker: (_b = orderAction.maker) === null || _b === void 0 ? void 0 : _b.toString(),
                     makerOrderId: orderAction.makerOrderId,
-                    makerFee: orderAction.makerFee ? (orderAction.makerFee.toNumber() / sdk_1.FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : null,
+                    makerFee: orderAction.makerFee ? (orderAction.makerFee.toNumber() / sdk_1.FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : 0,
                     taker: (_c = orderAction.taker) === null || _c === void 0 ? void 0 : _c.toString(),
                     takerOrderId: orderAction.takerOrderId,
-                    takerFee: orderAction.takerFee ? (orderAction.takerFee.toNumber() / sdk_1.FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : null,
+                    takerFee: orderAction.takerFee ? (orderAction.takerFee.toNumber() / sdk_1.FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString() : 0,
                 }
             };
         }
