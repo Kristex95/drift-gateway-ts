@@ -18,7 +18,6 @@ router.post('/orders', (req, res) => {
   const driftClient = req.app.locals.driftClient as DriftClient;
 
   const { orders } = req.body;
-  console.log(orders);
 
   orders.forEach((order: any) => {
     const {
