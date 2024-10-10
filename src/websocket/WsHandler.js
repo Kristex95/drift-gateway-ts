@@ -55,6 +55,9 @@ function startWebSocketServer(server, connection, driftClient) {
         var clientId = Date.now();
         clients.push({ id: clientId, ws: ws, subscribed: false });
         console.log("Client connected: ".concat(clientId));
+        ws.on("error", function (error) {
+            console.error("Client ".concat(clientId, " encountered an error:"), error);
+        });
         ws.on("message", function (message) {
             console.log("Received: ".concat(message));
             handleIncomingMessage(message, clientId);
@@ -93,7 +96,6 @@ function subscribeToEvent(connection, driftClient) {
                             clients.forEach(function (client) {
                                 var _a, _b;
                                 if (client.subscribed && (((_a = orderActionRecord_1.taker) === null || _a === void 0 ? void 0 : _a.toString()) == userAccountPublicKey || ((_b = orderActionRecord_1.maker) === null || _b === void 0 ? void 0 : _b.toString()) == userAccountPublicKey)) {
-                                    //broadcastMessage(orderActionRecord.action, client);
                                     var processedAction = (0, UpdateOrderAction_1.processUpdateOrder)(orderActionRecord_1);
                                     if (processedAction == null) {
                                         return;

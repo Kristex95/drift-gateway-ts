@@ -1,5 +1,7 @@
 import { DriftClient, PositionDirection, PostOnlyParams, OrderType, MarketType } from "@drift-labs/sdk";
 
+import { SendTransactionError } from "@solana/web3.js";
+
 const {
   initialize,
   OrderTriggerCondition,
@@ -29,11 +31,13 @@ export class OrderCreator{
     };
   
     try {
+      console.log(`Placing market order: ${orderParams.toString()}`);
       const tx = await driftClient.placePerpOrder(orderParams);
       console.log(`Market order placed. Transaction: ${tx}`);
       return tx;
     } catch (error) {
       console.error(`Error placing market order: ${error}`);
+      throw error;
     }
   }
   
@@ -48,11 +52,15 @@ export class OrderCreator{
       postOnly: PostOnlyParams.NONE,
     };
     try {
+      console.log(`Placint limit order: ${orderParams}`);
       const tx = await driftClient.placePerpOrder(orderParams);
       console.log(`Limit order placed. Transaction: ${tx}`);
       return tx;
     } catch (error) {
-      console.error(`Error placing limit order: ${error}`);
+      if (!(error instanceof SendTransactionError)) {
+        console.error("Error placing limit order:", error);
+        throw error;
+      }
     }
   }
 }

@@ -44,6 +44,10 @@ export function startWebSocketServer(
 
     console.log(`Client connected: ${clientId}`);
 
+    ws.on("error", (error) => {
+      console.error(`Client ${clientId} encountered an error:`, error);
+    });  
+
     ws.on("message", (message: string) => {
       console.log(`Received: ${message}`);
       handleIncomingMessage(message, clientId);
@@ -86,7 +90,6 @@ async function subscribeToEvent(
       const orderActionRecord = event as ExtendedOrderActionRecord;
         clients.forEach((client) => {
         if (client.subscribed && (orderActionRecord.taker?.toString() == userAccountPublicKey || orderActionRecord.maker?.toString() == userAccountPublicKey)) {
-          //broadcastMessage(orderActionRecord.action, client);
           const processedAction = processUpdateOrder(orderActionRecord);
           if(processedAction == null){
             return;

@@ -44,83 +44,128 @@ var PositionService_1 = require("../service/PositionService");
 var router = (0, express_1.Router)();
 exports.router = router;
 // GET request that doesn't require any parameters
-router.get('/data', function (req, res) {
+router.get("/data", function (req, res) {
     var driftClient = req.app.locals.driftClient;
     if (driftClient) {
         res.status(200).json({
             subscribed: driftClient._isSubscribed,
-            message: driftClient._isSubscribed ? "Client is subscribed" : "Client is not subscribed",
+            message: driftClient._isSubscribed
+                ? "Client is subscribed"
+                : "Client is not subscribed",
         });
     }
     else {
-        res.status(500).json({ error: 'DriftClient not found' });
+        res.status(500).json({ error: "DriftClient not found" });
     }
 });
 //places orders
-router.post('/orders', function (req, res) {
-    var driftClient = req.app.locals.driftClient;
-    var orders = req.body.orders;
-    orders.forEach(function (order) {
-        var marketIndex = order.marketIndex, amount = order.amount, price = order.price, orderType = order.orderType;
-        var direction = amount > 0 ? sdk_1.PositionDirection.LONG : sdk_1.PositionDirection.SHORT;
-        if (orderType === "limit") {
-            var tx = OrderCreator_1.OrderCreator.placeLimitOrder(driftClient, marketIndex, direction, amount, price);
-            tx.then(function (result) {
-                res.status(200).json({ tx: result });
-                return;
-            });
-        }
-        else if (orderType === "market") {
-            var tx = OrderCreator_1.OrderCreator.placeMarketOrder(driftClient, marketIndex, direction, amount);
-            tx.then(function (result) {
-                res.status(200).json({ tx: result });
-                return;
-            });
+router.post("/orders", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var driftClient, orders, order, marketIndex, amount, price, orderType, direction, result, result, err_1, errorMessage;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                console.log("TEMP: place order request called ".concat(req));
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 6, , 7]);
+                driftClient = req.app.locals.driftClient;
+                orders = req.body.orders;
+                if (!orders || orders.length === 0) {
+                    return [2 /*return*/, res.status(400).send("No orders provided.")];
+                }
+                order = orders[0];
+                marketIndex = order.marketIndex, amount = order.amount, price = order.price, orderType = order.orderType;
+                direction = amount > 0 ? sdk_1.PositionDirection.LONG : sdk_1.PositionDirection.SHORT;
+                if (orderType !== "limit" && orderType !== "market") {
+                    return [2 /*return*/, res.status(400).send("Invalid order type.")];
+                }
+                if (!(orderType === "limit")) return [3 /*break*/, 3];
+                return [4 /*yield*/, OrderCreator_1.OrderCreator.placeLimitOrder(driftClient, marketIndex, direction, amount, price)];
+            case 2:
+                result = _a.sent();
+                return [2 /*return*/, res.status(200).json({ tx: result })];
+            case 3:
+                if (!(orderType === "market")) return [3 /*break*/, 5];
+                return [4 /*yield*/, OrderCreator_1.OrderCreator.placeMarketOrder(driftClient, marketIndex, direction, amount)];
+            case 4:
+                result = _a.sent();
+                return [2 /*return*/, res.status(200).json({ tx: result })];
+            case 5: return [3 /*break*/, 7];
+            case 6:
+                err_1 = _a.sent();
+                console.log("/orders caught an error:", err_1);
+                errorMessage = err_1 instanceof Error ? err_1.message : String(err_1);
+                return [2 /*return*/, res.status(400).send(errorMessage)];
+            case 7: return [2 /*return*/];
         }
     });
-});
-//returns all clients positions 
+}); });
+//returns all clients positions
 router.get("/positions", function (req, res) {
-    var user = req.app.locals.user;
-    var positions = (0, PositionService_1.getAllPositions)(user);
-    res.status(200).json(positions);
+    try {
+        var user = req.app.locals.user;
+        var positions = (0, PositionService_1.getAllPositions)(user);
+        res.status(200).json(positions);
+    }
+    catch (err) {
+        res.status(400).send(err);
+    }
 });
 //returns balance value in USD
 router.get("/balance", function (req, res) {
-    var user = req.app.locals.user;
-    console.log(user.getNetSpotMarketValue().toNumber() / sdk_1.QUOTE_PRECISION.toNumber());
-    res.status(200).json({
-        balance: ((user.getNetUsdValue().toNumber() - user.getUnrealizedPNL().toNumber()) / sdk_1.QUOTE_PRECISION.toNumber()).toString()
-    });
+    try {
+        var user = req.app.locals.user;
+        var precision = sdk_1.QUOTE_PRECISION.toNumber();
+        res.status(200).json({
+            balance: ((user.getNetUsdValue().toNumber() -
+                user.getUnrealizedPNL().toNumber()) /
+                precision).toString(),
+            unrealizedPnl: user.getUnrealizedPNL().toNumber() / precision,
+            totalCollateral: user.getTotalCollateral().toNumber() / precision,
+            freeCollateral: user.getFreeCollateral().toNumber() / precision,
+            totalInitialMargin: user.getInitialMarginRequirement().toNumber() / precision,
+            totalMaintenanceMargin: user.getMaintenanceMarginRequirement().toNumber() / precision,
+        });
+    }
+    catch (err) {
+        res.status(400).send(err);
+    }
 });
 //returns extended info by market index
 router.get("/positionInfo/:id", function (req, res) {
-    var user = req.app.locals.user;
-    var positionId = Number(req.params.id);
-    var position = user.getPerpPosition(positionId);
-    if (position === undefined) {
-        return res.status(200).json({});
+    try {
+        var user = req.app.locals.user;
+        var positionId = Number(req.params.id);
+        var position = user.getPerpPosition(positionId);
+        if (position === undefined) {
+            return res.status(200).json({});
+        }
+        if (!position) {
+            return res
+                .status(404)
+                .json({ error: "Position with ID ".concat(positionId, " not found") });
+        }
+        res.status(200).json({
+            amount: (position.baseAssetAmount.toNumber() / sdk_1.BASE_PRECISION.toNumber()).toString(),
+            averageEntry: position.quoteEntryAmount.toNumber().toString(),
+            marketIndex: position.marketIndex,
+            liquidationPrice: null, //todo
+            unrealizedPnl: null, //todo
+            unsettledPnl: position.settledPnl.toNumber(), //todo unsettled
+            oraclePrice: null, //todo
+        });
     }
-    if (!position) {
-        return res.status(404).json({ error: "Position with ID ".concat(positionId, " not found") });
+    catch (err) {
+        res.status(400).send(err);
     }
-    res.status(200).json({
-        amount: (position.baseAssetAmount.toNumber() / sdk_1.BASE_PRECISION.toNumber()).toString(),
-        averageEntry: position.quoteEntryAmount.toNumber().toString(),
-        marketIndex: position.marketIndex,
-        liquidationPrice: null, //todo
-        unrealizedPnl: null, //todo
-        unsettledPnl: position.settledPnl.toNumber(), //todo unsettled
-        oraclePrice: null //todo
-    });
 });
 //returns all coins indexes and order requirements
-router.get('/markets', function (req, res) {
+router.get("/markets", function (req, res) {
     var driftClient = req.app.locals.driftClient;
-    if (!driftClient) {
-        return res.status(500).json({ error: 'DriftClient not found' });
-    }
     try {
+        if (!driftClient) {
+            return res.status(500).json({ error: "DriftClient not found" });
+        }
         var perpMarkets = driftClient.getPerpMarketAccounts();
         var spotMarkets = driftClient.getSpotMarketAccounts();
         var perpResult = perpMarkets.map(function (element) { return ({
@@ -130,7 +175,8 @@ router.get('/markets', function (req, res) {
             amountStep: (element.amm.orderStepSize.toNumber() / sdk_1.AMM_RESERVE_PRECISION.toNumber()).toString(),
             minOrderSize: (element.amm.minOrderSize.toNumber() / sdk_1.BASE_PRECISION.toNumber()).toString(),
             initialMarginRatio: (element.marginRatioInitial / sdk_1.FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString(),
-            maintenanceMarginRatio: (element.marginRatioMaintenance / sdk_1.FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString()
+            maintenanceMarginRatio: (element.marginRatioMaintenance /
+                sdk_1.FUNDING_RATE_BUFFER_PRECISION.toNumber()).toString(),
         }); });
         var spotResult = spotMarkets.map(function (element) { return ({
             marketIndex: element.marketIndex.toString(),
@@ -139,11 +185,11 @@ router.get('/markets', function (req, res) {
             amountStep: null,
             minOrderSize: (element.minOrderSize.toNumber() / sdk_1.BASE_PRECISION.toNumber()).toString(),
             initialMarginRatio: null,
-            maintenanceMarginRatio: null
+            maintenanceMarginRatio: null,
         }); });
         res.status(200).json({
             spot: spotResult,
-            perp: perpResult
+            perp: perpResult,
         });
     }
     catch (err) {
@@ -151,15 +197,17 @@ router.get('/markets', function (req, res) {
     }
 });
 //cancels orders
-router.delete('/orders', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var driftClient, ids, result, err_1;
+router.delete("/orders", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var driftClient, ids, result, err_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 driftClient = req.app.locals.driftClient;
                 ids = req.body.ids;
                 if (!Array.isArray(ids)) {
-                    return [2 /*return*/, res.status(400).json({ error: 'Invalid data: IDs should be an array' })];
+                    return [2 /*return*/, res
+                            .status(400)
+                            .json({ error: "Invalid data: IDs should be an array" })];
                 }
                 _a.label = 1;
             case 1:
@@ -167,11 +215,13 @@ router.delete('/orders', function (req, res) { return __awaiter(void 0, void 0, 
                 return [4 /*yield*/, driftClient.cancelOrdersByIds(ids)];
             case 2:
                 result = _a.sent();
-                res.status(200).json({ message: 'Orders cancelled successfully', tx: result });
+                res
+                    .status(200)
+                    .json({ message: "Orders cancelled successfully", tx: result });
                 return [3 /*break*/, 4];
             case 3:
-                err_1 = _a.sent();
-                res.status(500).json({ error: err_1 });
+                err_2 = _a.sent();
+                res.status(500).json({ error: err_2 });
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }

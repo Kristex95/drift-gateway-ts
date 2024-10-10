@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderCreator = void 0;
 var sdk_1 = require("@drift-labs/sdk");
+var web3_js_1 = require("@solana/web3.js");
 var _a = require("@drift-labs/sdk"), initialize = _a.initialize, OrderTriggerCondition = _a.OrderTriggerCondition, BN = _a.BN, PRICE_PRECISION = _a.PRICE_PRECISION, BASE_PRECISION = _a.BASE_PRECISION, QUOTE_PRECISION = _a.QUOTE_PRECISION;
 var OrderCreator = /** @class */ (function () {
     function OrderCreator() {
@@ -60,6 +61,7 @@ var OrderCreator = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
+                        console.log("Placing market order: ".concat(orderParams.toString()));
                         return [4 /*yield*/, driftClient.placePerpOrder(orderParams)];
                     case 2:
                         tx = _a.sent();
@@ -68,7 +70,7 @@ var OrderCreator = /** @class */ (function () {
                     case 3:
                         error_1 = _a.sent();
                         console.error("Error placing market order: ".concat(error_1));
-                        return [3 /*break*/, 4];
+                        throw error_1;
                     case 4: return [2 /*return*/];
                 }
             });
@@ -92,6 +94,7 @@ var OrderCreator = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
+                        console.log("Placint limit order: ".concat(orderParams));
                         return [4 /*yield*/, driftClient.placePerpOrder(orderParams)];
                     case 2:
                         tx = _a.sent();
@@ -99,7 +102,10 @@ var OrderCreator = /** @class */ (function () {
                         return [2 /*return*/, tx];
                     case 3:
                         error_2 = _a.sent();
-                        console.error("Error placing limit order: ".concat(error_2));
+                        if (!(error_2 instanceof web3_js_1.SendTransactionError)) {
+                            console.error("Error placing limit order:", error_2);
+                            throw error_2;
+                        }
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }

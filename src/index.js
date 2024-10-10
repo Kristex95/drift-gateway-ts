@@ -88,6 +88,7 @@ function init() {
                     _a.sent();
                     app.locals.driftClient = driftClient_1;
                     app.locals.user = user;
+                    app.locals.connection = connection_1;
                     console.log("Successfully subscribed to DriftClient.");
                     WS_PORT = options.ws_port || process.env.WS_PORT || 3001;
                     server.listen(WS_PORT, function () {
@@ -111,4 +112,3 @@ app.listen(PORT, function () {
     console.log("Server is running on port ".concat(PORT));
     init();
 });
-// Call the init function to set everything up

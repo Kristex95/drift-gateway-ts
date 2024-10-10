@@ -3,7 +3,6 @@ import bodyParser from 'body-parser';
 import { router } from './routes/apiRoutes';
 import { Connection ,PublicKey } from "@solana/web3.js";
 import { Wallet, loadKeypair, DriftClient, EventSubscriber, EventSubscriptionOptions } from "@drift-labs/sdk";
-import path from 'path';
 require('dotenv').config();
 import http from 'http';
 import { startWebSocketServer } from './websocket/WsHandler';
@@ -32,8 +31,6 @@ async function init() {
       options.rpc
     );
 
-    // Load keypair from file
-    // const keyPairFile = path.resolve(`C:/Users/Kristex/.config/solana/my-keypair.json`);
     const wallet = new Wallet(loadKeypair(options.private_key));
 
     // Initialize DriftClient
@@ -49,6 +46,7 @@ async function init() {
     await user.subscribe();
     app.locals.driftClient = driftClient;
     app.locals.user = user;
+    app.locals.connection = connection;
     console.log("Successfully subscribed to DriftClient.");
 
     var WS_PORT = options.ws_port || process.env.WS_PORT || 3001;
@@ -56,7 +54,6 @@ async function init() {
       startWebSocketServer(server, connection, driftClient);
       console.log(`Websocket is running on port ${WS_PORT}`);
     });
-    //subscribeToEvent(connection, driftClient);
   } catch (error) {
     console.error("Error initializing DriftClient:", error);
   }
@@ -70,6 +67,3 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   init();
 });
-
-
-// Call the init function to set everything up
