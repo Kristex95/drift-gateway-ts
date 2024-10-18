@@ -64,10 +64,7 @@ router.post("/orders", function (req, res) { return __awaiter(void 0, void 0, vo
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                console.log("TEMP: place order request called ".concat(req));
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 6, , 7]);
+                _a.trys.push([0, 5, , 6]);
                 driftClient = req.app.locals.driftClient;
                 orders = req.body.orders;
                 if (!orders || orders.length === 0) {
@@ -79,24 +76,24 @@ router.post("/orders", function (req, res) { return __awaiter(void 0, void 0, vo
                 if (orderType !== "limit" && orderType !== "market") {
                     return [2 /*return*/, res.status(400).send("Invalid order type.")];
                 }
-                if (!(orderType === "limit")) return [3 /*break*/, 3];
+                if (!(orderType === "limit")) return [3 /*break*/, 2];
                 return [4 /*yield*/, OrderCreator_1.OrderCreator.placeLimitOrder(driftClient, marketIndex, direction, amount, price)];
+            case 1:
+                result = _a.sent();
+                return [2 /*return*/, res.status(200).json({ tx: result })];
             case 2:
-                result = _a.sent();
-                return [2 /*return*/, res.status(200).json({ tx: result })];
-            case 3:
-                if (!(orderType === "market")) return [3 /*break*/, 5];
+                if (!(orderType === "market")) return [3 /*break*/, 4];
                 return [4 /*yield*/, OrderCreator_1.OrderCreator.placeMarketOrder(driftClient, marketIndex, direction, amount)];
-            case 4:
+            case 3:
                 result = _a.sent();
                 return [2 /*return*/, res.status(200).json({ tx: result })];
-            case 5: return [3 /*break*/, 7];
-            case 6:
+            case 4: return [3 /*break*/, 6];
+            case 5:
                 err_1 = _a.sent();
                 console.log("/orders caught an error:", err_1);
                 errorMessage = err_1 instanceof Error ? err_1.message : String(err_1);
                 return [2 /*return*/, res.status(400).send(errorMessage)];
-            case 7: return [2 /*return*/];
+            case 6: return [2 /*return*/];
         }
     });
 }); });

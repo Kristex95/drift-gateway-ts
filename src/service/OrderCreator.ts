@@ -52,7 +52,12 @@ export class OrderCreator{
       postOnly: PostOnlyParams.NONE,
     };
     try {
-      console.log(`Placint limit order: ${orderParams}`);
+      const precision = QUOTE_PRECISION.toNumber();
+      console.log(`Placing limit order:`, {
+        ...orderParams,
+        baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(),
+        price: orderParams.price.toString() / precision,
+      });
       const tx = await driftClient.placePerpOrder(orderParams);
       console.log(`Limit order placed. Transaction: ${tx}`);
       return tx;

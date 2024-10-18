@@ -31,7 +31,6 @@ router.get("/data", (req, res) => {
 
 //places orders
 router.post("/orders", async (req, res) => {
-  console.log(`TEMP: place order request called ${req}`)
   try {
     const driftClient = req.app.locals.driftClient as DriftClient;
 
