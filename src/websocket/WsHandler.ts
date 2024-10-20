@@ -49,7 +49,7 @@ export function startWebSocketServer(
     });  
 
     ws.on("message", (message: string) => {
-      console.log(`Received: ${message}`);
+      console.log(`Received: ${JSON.stringify(message)}`);
       handleIncomingMessage(message, clientId);
     });
 
@@ -133,7 +133,7 @@ export function broadcastMessage(message: object, client: WebSocketConnection) {
     subAccountId: 0
   });
   if (client.ws.readyState === WebSocket.OPEN) {
-    console.log(logTime + " sent: " + jsonMessage);
+    console.log(`${logTime} sent: ${JSON.stringify(jsonMessage)}`);
     client.ws.send(jsonMessage);
   }
 }

@@ -12,7 +12,21 @@ import { Router } from "express";
 import { OrderCreator } from "../service/OrderCreator";
 import { getAllPositions } from "../service/PositionService";
 
+
 const router = Router();
+
+function safeStringify(obj: any) {
+  const seen = new Set();
+  return JSON.stringify(obj, (key, value) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return "[Circular]";
+      }
+      seen.add(value);
+    }
+    return value;
+  });
+}
 
 // GET request that doesn't require any parameters
 router.get("/data", (req, res) => {

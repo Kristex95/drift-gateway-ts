@@ -59,7 +59,7 @@ function startWebSocketServer(server, connection, driftClient) {
             console.error("Client ".concat(clientId, " encountered an error:"), error);
         });
         ws.on("message", function (message) {
-            console.log("Received: ".concat(message));
+            console.log("Received: ".concat(JSON.stringify(message)));
             handleIncomingMessage(message, clientId);
         });
         ws.on("close", function () {
@@ -142,7 +142,7 @@ function broadcastMessage(message, client) {
         subAccountId: 0
     });
     if (client.ws.readyState === ws_1.WebSocket.OPEN) {
-        console.log(logTime + " sent: " + jsonMessage);
+        console.log(logTime + " sent: " + JSON.stringify(jsonMessage));
         client.ws.send(jsonMessage);
     }
 }
