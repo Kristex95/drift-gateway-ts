@@ -135,13 +135,14 @@ function handleIncomingMessage(message, clientId) {
     }
 }
 function broadcastMessage(message, client) {
+    var logTime = new Date().toISOString();
     var jsonMessage = JSON.stringify({
         data: message,
         channel: "orders",
         subAccountId: 0
     });
     if (client.ws.readyState === ws_1.WebSocket.OPEN) {
-        console.log("sent: " + jsonMessage);
+        console.log(logTime + " sent: " + jsonMessage);
         client.ws.send(jsonMessage);
     }
 }

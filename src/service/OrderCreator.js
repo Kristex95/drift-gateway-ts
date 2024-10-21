@@ -58,7 +58,7 @@ var OrderCreator = /** @class */ (function () {
     }
     OrderCreator.placeMarketOrder = function (driftClient, marketIndex, direction, size) {
         return __awaiter(this, void 0, void 0, function () {
-            var orderParams, tx, error_1;
+            var orderParams, logTime, tx, logTime, error_1, logTime_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -72,15 +72,18 @@ var OrderCreator = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        console.log("Placing market order: ".concat(orderParams.toString()));
+                        logTime = new Date().toISOString();
+                        console.log("[".concat(logTime, "] Placing market order: "), __assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber() }));
                         return [4 /*yield*/, driftClient.placePerpOrder(orderParams)];
                     case 2:
                         tx = _a.sent();
-                        console.log("Market order placed. Transaction: ".concat(tx));
+                        logTime = new Date().toISOString();
+                        console.log("[".concat(logTime, "] Market order placed. Transaction: ").concat(tx));
                         return [2 /*return*/, tx];
                     case 3:
                         error_1 = _a.sent();
-                        console.error("Error placing market order: ".concat(error_1));
+                        logTime_1 = new Date().toISOString();
+                        console.error("[".concat(logTime_1, "] Error placing market order: ").concat(error_1));
                         throw error_1;
                     case 4: return [2 /*return*/];
                 }
@@ -89,7 +92,7 @@ var OrderCreator = /** @class */ (function () {
     };
     OrderCreator.placeLimitOrder = function (driftClient, marketIndex, direction, size, price) {
         return __awaiter(this, void 0, void 0, function () {
-            var orderParams, precision, tx, error_2;
+            var orderParams, logTime, precision, tx, error_2, logTime_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -105,17 +108,20 @@ var OrderCreator = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
+                        logTime = new Date().toISOString();
                         precision = QUOTE_PRECISION.toNumber();
-                        console.log("Placing limit order:", __assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(), price: orderParams.price.toString() / precision }));
-                        return [4 /*yield*/, driftClient.placePerpOrder(orderParams)];
+                        console.log("[".concat(logTime, "] Placing limit order:"), __assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(), price: orderParams.price.toString() / precision }));
+                        return [4 /*yield*/, driftClient.placePerpOrder(orderParams).then()];
                     case 2:
                         tx = _a.sent();
-                        console.log("Limit order placed. Transaction: ".concat(tx));
+                        logTime = new Date().toISOString();
+                        console.log("[".concat(logTime, "] Limit order placed. Transaction: ").concat(tx));
                         return [2 /*return*/, tx];
                     case 3:
                         error_2 = _a.sent();
+                        logTime_2 = new Date().toISOString();
                         if (!(error_2 instanceof web3_js_1.SendTransactionError)) {
-                            console.error("Error placing limit order:", error_2);
+                            console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
                             throw error_2;
                         }
                         return [3 /*break*/, 4];

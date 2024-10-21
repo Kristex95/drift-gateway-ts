@@ -126,13 +126,14 @@ function handleIncomingMessage(message: string, clientId: number) {
 }
 
 export function broadcastMessage(message: object, client: WebSocketConnection) {
+  const logTime = new Date().toISOString();
   const jsonMessage = JSON.stringify({
     data: message,
     channel: "orders",
     subAccountId: 0
   });
   if (client.ws.readyState === WebSocket.OPEN) {
-    console.log("sent: " + jsonMessage);
+    console.log(logTime + " sent: " + jsonMessage);
     client.ws.send(jsonMessage);
   }
 }

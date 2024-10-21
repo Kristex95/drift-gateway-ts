@@ -31,12 +31,18 @@ export class OrderCreator{
     };
   
     try {
-      console.log(`Placing market order: ${orderParams.toString()}`);
+      var logTime = new Date().toISOString();
+      console.log(`[${logTime}] Placing market order: `, {
+        ...orderParams,
+        baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber()
+      });
       const tx = await driftClient.placePerpOrder(orderParams);
-      console.log(`Market order placed. Transaction: ${tx}`);
+      var logTime = new Date().toISOString();
+      console.log(`[${logTime}] Market order placed. Transaction: ${tx}`);
       return tx;
     } catch (error) {
-      console.error(`Error placing market order: ${error}`);
+      const logTime = new Date().toISOString();
+      console.error(`[${logTime}] Error placing market order: ${error}`);
       throw error;
     }
   }
@@ -52,18 +58,21 @@ export class OrderCreator{
       postOnly: PostOnlyParams.NONE,
     };
     try {
+      var logTime = new Date().toISOString();
       const precision = QUOTE_PRECISION.toNumber();
-      console.log(`Placing limit order:`, {
+      console.log(`[${logTime}] Placing limit order:`, {
         ...orderParams,
         baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(),
         price: orderParams.price.toString() / precision,
       });
-      const tx = await driftClient.placePerpOrder(orderParams);
-      console.log(`Limit order placed. Transaction: ${tx}`);
+      const tx = await driftClient.placePerpOrder(orderParams).then();
+      logTime = new Date().toISOString();
+      console.log(`[${logTime}] Limit order placed. Transaction: ${tx}`);
       return tx;
     } catch (error) {
+      const logTime = new Date().toISOString();
       if (!(error instanceof SendTransactionError)) {
-        console.error("Error placing limit order:", error);
+        console.error(`[${logTime}] Error placing limit order:`, error);
         throw error;
       }
     }
