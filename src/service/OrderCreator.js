@@ -100,7 +100,7 @@ var OrderCreator = /** @class */ (function () {
                             orderType: sdk_1.OrderType.LIMIT,
                             marketIndex: marketIndex,
                             marketType: sdk_1.MarketType.PERP,
-                            direction: direction,
+                            direction: direction === "long" ? sdk_1.PositionDirection.LONG : sdk_1.PositionDirection.SHORT,
                             baseAssetAmount: new BN(size * BASE_PRECISION),
                             price: new BN(price * PRICE_PRECISION),
                             postOnly: sdk_1.PostOnlyParams.NONE,
@@ -123,6 +123,9 @@ var OrderCreator = /** @class */ (function () {
                         if (!(error_2 instanceof web3_js_1.SendTransactionError)) {
                             console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
                             throw error_2;
+                        }
+                        else {
+                            console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
                         }
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];

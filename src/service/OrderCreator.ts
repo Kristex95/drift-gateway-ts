@@ -52,7 +52,7 @@ export class OrderCreator{
       orderType: OrderType.LIMIT,
       marketIndex,
       marketType: MarketType.PERP,
-      direction: direction,
+      direction: direction === "long" ? PositionDirection.LONG : PositionDirection.SHORT,
       baseAssetAmount: new BN(size * BASE_PRECISION),
       price: new BN(price * PRICE_PRECISION),
       postOnly: PostOnlyParams.NONE,
@@ -74,6 +74,9 @@ export class OrderCreator{
       if (!(error instanceof SendTransactionError)) {
         console.error(`[${logTime}] Error placing limit order:`, error);
         throw error;
+      }
+      else {
+        console.error(`[${logTime}] Error placing limit order:`, error);
       }
     }
   }
