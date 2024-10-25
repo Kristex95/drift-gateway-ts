@@ -26,7 +26,7 @@ export class OrderCreator{
       orderType: OrderType.MARKET,
       marketIndex,
       marketType: MarketType.PERP,
-      direction: direction === "long" ? PositionDirection.LONG : PositionDirection.SHORT,
+      direction: direction,
       baseAssetAmount: new BN(size * BASE_PRECISION),
     };
   
@@ -52,7 +52,7 @@ export class OrderCreator{
       orderType: OrderType.LIMIT,
       marketIndex,
       marketType: MarketType.PERP,
-      direction: direction === "long" ? PositionDirection.LONG : PositionDirection.SHORT,
+      direction: direction,
       baseAssetAmount: new BN(size * BASE_PRECISION),
       price: new BN(price * PRICE_PRECISION),
       postOnly: PostOnlyParams.NONE,

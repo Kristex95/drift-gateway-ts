@@ -66,7 +66,7 @@ var OrderCreator = /** @class */ (function () {
                             orderType: sdk_1.OrderType.MARKET,
                             marketIndex: marketIndex,
                             marketType: sdk_1.MarketType.PERP,
-                            direction: direction === "long" ? sdk_1.PositionDirection.LONG : sdk_1.PositionDirection.SHORT,
+                            direction: direction,
                             baseAssetAmount: new BN(size * BASE_PRECISION),
                         };
                         _a.label = 1;
@@ -100,7 +100,7 @@ var OrderCreator = /** @class */ (function () {
                             orderType: sdk_1.OrderType.LIMIT,
                             marketIndex: marketIndex,
                             marketType: sdk_1.MarketType.PERP,
-                            direction: direction === "long" ? sdk_1.PositionDirection.LONG : sdk_1.PositionDirection.SHORT,
+                            direction: direction,
                             baseAssetAmount: new BN(size * BASE_PRECISION),
                             price: new BN(price * PRICE_PRECISION),
                             postOnly: sdk_1.PostOnlyParams.NONE,
