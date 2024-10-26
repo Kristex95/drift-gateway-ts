@@ -73,7 +73,7 @@ var OrderCreator = /** @class */ (function () {
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         logTime = new Date().toISOString();
-                        console.log("[".concat(logTime, "] Placing market order: "), __assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber() }));
+                        console.log("[".concat(logTime, "] Placing market order: ").concat(JSON.stringify(__assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber() }))));
                         return [4 /*yield*/, driftClient.placePerpOrder(orderParams)];
                     case 2:
                         tx = _a.sent();
@@ -110,7 +110,7 @@ var OrderCreator = /** @class */ (function () {
                         _a.trys.push([1, 3, , 4]);
                         logTime = new Date().toISOString();
                         precision = QUOTE_PRECISION.toNumber();
-                        console.log("[".concat(logTime, "] Placing limit order:"), __assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(), price: orderParams.price.toString() / precision }));
+                        console.log("[".concat(logTime, "] Placing limit order: ").concat(JSON.stringify(__assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(), price: orderParams.price.toString() / precision }))));
                         return [4 /*yield*/, driftClient.placePerpOrder(orderParams).then()];
                     case 2:
                         tx = _a.sent();

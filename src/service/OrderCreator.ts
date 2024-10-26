@@ -32,10 +32,12 @@ export class OrderCreator{
   
     try {
       var logTime = new Date().toISOString();
-      console.log(`[${logTime}] Placing market order: `, {
-        ...orderParams,
-        baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber()
-      });
+      console.log(
+        `[${logTime}] Placing market order: ${JSON.stringify({
+          ...orderParams,
+          baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber()
+        })}`
+      );
       const tx = await driftClient.placePerpOrder(orderParams);
       var logTime = new Date().toISOString();
       console.log(`[${logTime}] Market order placed. Transaction: ${tx}`);
@@ -60,11 +62,12 @@ export class OrderCreator{
     try {
       var logTime = new Date().toISOString();
       const precision = QUOTE_PRECISION.toNumber();
-      console.log(`[${logTime}] Placing limit order:`, {
+      console.log(`[${logTime}] Placing limit order: ${JSON.stringify({
         ...orderParams,
         baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(),
         price: orderParams.price.toString() / precision,
-      });
+        })}`
+      );
       const tx = await driftClient.placePerpOrder(orderParams).then();
       logTime = new Date().toISOString();
       console.log(`[${logTime}] Limit order placed. Transaction: ${tx}`);
