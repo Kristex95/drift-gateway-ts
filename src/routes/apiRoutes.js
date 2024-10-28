@@ -77,6 +77,7 @@ router.post("/orders", function (req, res) { return __awaiter(void 0, void 0, vo
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 5, , 6]);
+                console.log("POST /orders", safeStringify(req.body));
                 driftClient = req.app.locals.driftClient;
                 orders = req.body.orders;
                 if (!orders || orders.length === 0) {

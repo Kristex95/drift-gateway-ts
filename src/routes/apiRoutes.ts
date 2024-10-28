@@ -6,7 +6,7 @@ import {
   BASE_PRECISION,
   FUNDING_RATE_BUFFER_PRECISION,
   User,
-  PRICE_PRECISION,
+  PRICE_PRECISION, convertToNumber,
 } from "@drift-labs/sdk";
 import { Router } from "express";
 import { OrderCreator } from "../service/OrderCreator";
@@ -46,6 +46,7 @@ router.get("/data", (req, res) => {
 //places orders
 router.post("/orders", async (req, res) => {
   try {
+    console.log("POST /orders", safeStringify(req.body));
     const driftClient = req.app.locals.driftClient as DriftClient;
 
     const { orders } = req.body;
@@ -105,18 +106,14 @@ router.get("/positions", (req, res) => {
 router.get("/balance", (req, res) => {
   try {
     const user = req.app.locals.user as User;
-    const precision = QUOTE_PRECISION.toNumber();
+    const precision = QUOTE_PRECISION;
     res.status(200).json({
-      balance: (
-        (user.getNetUsdValue().toNumber() -
-          user.getUnrealizedPNL().toNumber()) /
-          precision
-      ).toString(),
-      unrealizedPnl: user.getUnrealizedPNL().toNumber() / precision,
-      totalCollateral: user.getTotalCollateral().toNumber() / precision,
-      freeCollateral: user.getFreeCollateral().toNumber() / precision,
-      totalInitialMargin: user.getInitialMarginRequirement().toNumber() / precision,
-      totalMaintenanceMargin: user.getMaintenanceMarginRequirement().toNumber() / precision,
+      balance: convertToNumber(user.getNetUsdValue().sub(user.getUnrealizedPNL()), precision).toString(),
+      unrealizedPnl: convertToNumber(user.getUnrealizedPNL(), precision),
+      totalCollateral: convertToNumber(user.getTotalCollateral(), precision),
+      freeCollateral: convertToNumber(user.getFreeCollateral(), precision),
+      totalInitialMargin: convertToNumber(user.getInitialMarginRequirement(), precision),
+      totalMaintenanceMargin: convertToNumber(user.getMaintenanceMarginRequirement(), precision),
     });
   } catch (err) {
     res.status(400).send(err);
@@ -140,15 +137,17 @@ router.get("/positionInfo/:id", (req, res) => {
         .json({ error: `Position with ID ${positionId} not found` });
     }
 
+    const baseQty = convertToNumber(position.baseAssetAmount, BASE_PRECISION);
+    const quoteEntryAmount = convertToNumber(position.quoteEntryAmount, QUOTE_PRECISION);
+    const entryPrice = Math.abs(quoteEntryAmount / baseQty);
+
     res.status(200).json({
-      amount: (
-        position.baseAssetAmount.toNumber() / BASE_PRECISION.toNumber()
-      ).toString(),
-      averageEntry: position.quoteEntryAmount.toNumber().toString(),
+      amount: baseQty.toString(),
+      averageEntry: entryPrice.toString(),
       marketIndex: position.marketIndex,
       liquidationPrice: null, //todo
       unrealizedPnl: null, //todo
-      unsettledPnl: position.settledPnl.toNumber(), //todo unsettled
+      unsettledPnl: convertToNumber(position.settledPnl,  QUOTE_PRECISION).toString(), //todo unsettled
       oraclePrice: null, //todo
     });
   } catch (err) {
