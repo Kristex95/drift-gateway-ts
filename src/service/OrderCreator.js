@@ -51,6 +51,7 @@ exports.OrderCreator = void 0;
 var sdk_1 = require("@drift-labs/sdk");
 var web3_js_1 = require("@solana/web3.js");
 var _a = require("@drift-labs/sdk"), initialize = _a.initialize, OrderTriggerCondition = _a.OrderTriggerCondition, BN = _a.BN, PRICE_PRECISION = _a.PRICE_PRECISION, BASE_PRECISION = _a.BASE_PRECISION, QUOTE_PRECISION = _a.QUOTE_PRECISION;
+var TRANSACTION_ALREADY_PROCESSED_MESSAGE = "Transaction simulation failed: This transaction has already been processed.";
 var OrderCreator = /** @class */ (function () {
     function OrderCreator() {
         this.currentPriorityFee = 50000; // Default priority fee
@@ -84,7 +85,15 @@ var OrderCreator = /** @class */ (function () {
                         error_1 = _a.sent();
                         logTime_1 = new Date().toISOString();
                         console.error("[".concat(logTime_1, "] Error placing market order: ").concat(error_1));
-                        throw error_1;
+                        if (error_1 instanceof web3_js_1.SendTransactionError) {
+                            if (error_1.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()) {
+                                throw new Error("Transaction simulation failed: ".concat(error_1.transactionError.message, " | Logs: ").concat(error_1.getLogs.toString()));
+                            }
+                        }
+                        else {
+                            throw error_1;
+                        }
+                        return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
             });
@@ -120,12 +129,14 @@ var OrderCreator = /** @class */ (function () {
                     case 3:
                         error_2 = _a.sent();
                         logTime_2 = new Date().toISOString();
-                        if (!(error_2 instanceof web3_js_1.SendTransactionError)) {
-                            console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
-                            throw error_2;
+                        console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
+                        if (error_2 instanceof web3_js_1.SendTransactionError) {
+                            if (error_2.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()) {
+                                throw new Error("Transaction simulation failed: ".concat(error_2.transactionError.message, " | Logs: ").concat(error_2.getLogs.toString()));
+                            }
                         }
                         else {
-                            console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
+                            throw error_2;
                         }
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];

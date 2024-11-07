@@ -11,6 +11,8 @@ const {
   QUOTE_PRECISION
 } = require("@drift-labs/sdk");
 
+const TRANSACTION_ALREADY_PROCESSED_MESSAGE = "Transaction simulation failed: This transaction has already been processed.";
+
 export class OrderCreator{
 
   private currentPriorityFee: number;
@@ -45,7 +47,13 @@ export class OrderCreator{
     } catch (error) {
       const logTime = new Date().toISOString();
       console.error(`[${logTime}] Error placing market order: ${error}`);
-      throw error;
+      if (error instanceof SendTransactionError) {
+        if(error.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()){
+          throw new Error(`Transaction simulation failed: ${error.transactionError.message} | Logs: ${error.getLogs.toString()}`);
+        }
+      } else {
+        throw error;
+      }
     }
   }
   
@@ -74,12 +82,13 @@ export class OrderCreator{
       return tx;
     } catch (error) {
       const logTime = new Date().toISOString();
-      if (!(error instanceof SendTransactionError)) {
-        console.error(`[${logTime}] Error placing limit order:`, error);
+      console.error(`[${logTime}] Error placing limit order:`, error);
+      if (error instanceof SendTransactionError) {
+        if(error.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()){
+          throw new Error(`Transaction simulation failed: ${error.transactionError.message} | Logs: ${error.getLogs.toString()}`);
+        }
+      } else {
         throw error;
-      }
-      else {
-        console.error(`[${logTime}] Error placing limit order:`, error);
       }
     }
   }

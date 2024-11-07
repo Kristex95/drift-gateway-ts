@@ -86,7 +86,8 @@ router.post("/orders", async (req, res) => {
   } catch (err) {
     console.log("/orders caught an error:", err);
     const errorMessage = err instanceof Error ? err.message : String(err);
-    return res.status(400).send(errorMessage);
+    const singleLineError = JSON.stringify(errorMessage).replace(/\\n/g, ' ');
+    return res.status(400).send(singleLineError);
   }
 });
 
@@ -98,7 +99,7 @@ router.get("/positions", (req, res) => {
     const positions = getAllPositions(user);
     res.status(200).json(positions);
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).send(JSON.stringify(err));
   }
 });
 
@@ -116,7 +117,7 @@ router.get("/balance", (req, res) => {
       totalMaintenanceMargin: convertToNumber(user.getMaintenanceMarginRequirement(), precision),
     });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).send(JSON.stringify(err));
   }
 });
 
@@ -151,7 +152,7 @@ router.get("/positionInfo/:id", (req, res) => {
       oraclePrice: null, //todo
     });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).send(JSON.stringify(err));
   }
 });
 

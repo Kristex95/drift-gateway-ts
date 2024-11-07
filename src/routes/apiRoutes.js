@@ -72,7 +72,7 @@ router.get("/data", function (req, res) {
 });
 //places orders
 router.post("/orders", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var driftClient, orders, order, marketIndex, amount, price, orderType, direction, result, result, err_1, errorMessage;
+    var driftClient, orders, order, marketIndex, amount, price, orderType, direction, result, result, err_1, errorMessage, singleLineError;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -105,7 +105,8 @@ router.post("/orders", function (req, res) { return __awaiter(void 0, void 0, vo
                 err_1 = _a.sent();
                 console.log("/orders caught an error:", err_1);
                 errorMessage = err_1 instanceof Error ? err_1.message : String(err_1);
-                return [2 /*return*/, res.status(400).send(errorMessage)];
+                singleLineError = JSON.stringify(errorMessage).replace(/\\n/g, ' ');
+                return [2 /*return*/, res.status(400).send(singleLineError)];
             case 6: return [2 /*return*/];
         }
     });
@@ -118,7 +119,7 @@ router.get("/positions", function (req, res) {
         res.status(200).json(positions);
     }
     catch (err) {
-        res.status(400).send(err);
+        res.status(400).send(JSON.stringify(err));
     }
 });
 //returns balance value in USD
@@ -138,7 +139,7 @@ router.get("/balance", function (req, res) {
         });
     }
     catch (err) {
-        res.status(400).send(err);
+        res.status(400).send(JSON.stringify(err));
     }
 });
 //returns extended info by market index
@@ -166,7 +167,7 @@ router.get("/positionInfo/:id", function (req, res) {
         });
     }
     catch (err) {
-        res.status(400).send(err);
+        res.status(400).send(JSON.stringify(err));
     }
 });
 //returns all coins indexes and order requirements
