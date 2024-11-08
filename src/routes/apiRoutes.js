@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -126,16 +126,14 @@ router.get("/positions", function (req, res) {
 router.get("/balance", function (req, res) {
     try {
         var user = req.app.locals.user;
-        var precision = sdk_1.QUOTE_PRECISION.toNumber();
+        var precision = sdk_1.QUOTE_PRECISION;
         res.status(200).json({
-            balance: ((user.getNetUsdValue().toNumber() -
-                user.getUnrealizedPNL().toNumber()) /
-                precision).toString(),
-            unrealizedPnl: user.getUnrealizedPNL().toNumber() / precision,
-            totalCollateral: user.getTotalCollateral().toNumber() / precision,
-            freeCollateral: user.getFreeCollateral().toNumber() / precision,
-            totalInitialMargin: user.getInitialMarginRequirement().toNumber() / precision,
-            totalMaintenanceMargin: user.getMaintenanceMarginRequirement().toNumber() / precision,
+            balance: (0, sdk_1.convertToNumber)(user.getNetUsdValue().sub(user.getUnrealizedPNL()), precision).toString(),
+            unrealizedPnl: (0, sdk_1.convertToNumber)(user.getUnrealizedPNL(), precision),
+            totalCollateral: (0, sdk_1.convertToNumber)(user.getTotalCollateral(), precision),
+            freeCollateral: (0, sdk_1.convertToNumber)(user.getFreeCollateral(), precision),
+            totalInitialMargin: (0, sdk_1.convertToNumber)(user.getInitialMarginRequirement(), precision),
+            totalMaintenanceMargin: (0, sdk_1.convertToNumber)(user.getMaintenanceMarginRequirement(), precision),
         });
     }
     catch (err) {
@@ -156,13 +154,16 @@ router.get("/positionInfo/:id", function (req, res) {
                 .status(404)
                 .json({ error: "Position with ID ".concat(positionId, " not found") });
         }
+        var baseQty = (0, sdk_1.convertToNumber)(position.baseAssetAmount, sdk_1.BASE_PRECISION);
+        var quoteEntryAmount = (0, sdk_1.convertToNumber)(position.quoteEntryAmount, sdk_1.QUOTE_PRECISION);
+        var entryPrice = Math.abs(quoteEntryAmount / baseQty);
         res.status(200).json({
-            amount: (position.baseAssetAmount.toNumber() / sdk_1.BASE_PRECISION.toNumber()).toString(),
-            averageEntry: position.quoteEntryAmount.toNumber().toString(),
+            amount: baseQty.toString(),
+            averageEntry: entryPrice.toString(),
             marketIndex: position.marketIndex,
             liquidationPrice: null, //todo
             unrealizedPnl: null, //todo
-            unsettledPnl: position.settledPnl.toNumber(), //todo unsettled
+            unsettledPnl: (0, sdk_1.convertToNumber)(position.settledPnl, sdk_1.QUOTE_PRECISION).toString(), //todo unsettled
             oraclePrice: null, //todo
         });
     }
