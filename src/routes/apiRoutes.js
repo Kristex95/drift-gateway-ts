@@ -156,14 +156,14 @@ router.get("/positionInfo/:id", function (req, res) {
         }
         var baseQty = (0, sdk_1.convertToNumber)(position.baseAssetAmount, sdk_1.BASE_PRECISION);
         var quoteEntryAmount = (0, sdk_1.convertToNumber)(position.quoteEntryAmount, sdk_1.QUOTE_PRECISION);
-        var entryPrice = Math.abs(quoteEntryAmount / baseQty);
+        var entryPrice = baseQty === 0 ? 0 : Math.abs(quoteEntryAmount / baseQty);
         res.status(200).json({
             amount: baseQty.toString(),
             averageEntry: entryPrice.toString(),
             marketIndex: position.marketIndex,
             liquidationPrice: null, //todo
             unrealizedPnl: null, //todo
-            unsettledPnl: (0, sdk_1.convertToNumber)(position.settledPnl, sdk_1.QUOTE_PRECISION).toString(), //todo unsettled
+            unsettledPnl: null,
             oraclePrice: null, //todo
         });
     }

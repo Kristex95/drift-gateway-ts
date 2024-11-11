@@ -140,7 +140,7 @@ router.get("/positionInfo/:id", (req, res) => {
 
     const baseQty = convertToNumber(position.baseAssetAmount, BASE_PRECISION);
     const quoteEntryAmount = convertToNumber(position.quoteEntryAmount, QUOTE_PRECISION);
-    const entryPrice = Math.abs(quoteEntryAmount / baseQty);
+    const entryPrice = baseQty === 0 ? 0 : Math.abs(quoteEntryAmount / baseQty);
 
     res.status(200).json({
       amount: baseQty.toString(),
@@ -148,7 +148,7 @@ router.get("/positionInfo/:id", (req, res) => {
       marketIndex: position.marketIndex,
       liquidationPrice: null, //todo
       unrealizedPnl: null, //todo
-      unsettledPnl: convertToNumber(position.settledPnl,  QUOTE_PRECISION).toString(), //todo unsettled
+      unsettledPnl: null,
       oraclePrice: null, //todo
     });
   } catch (err) {
