@@ -85,7 +85,7 @@ export class OrderCreator{
       console.error(`[${logTime}] Error placing limit order:`, error);
       if (error instanceof SendTransactionError) {
         if(error.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()){
-          throw new Error(`Transaction simulation failed: ${error.transactionError.message} | Logs: ${error.getLogs.toString()}`);
+          throw new Error(`Transaction simulation failed: ${error.transactionError.message}`);
         }
       } else {
         throw error;

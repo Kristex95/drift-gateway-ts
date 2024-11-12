@@ -132,7 +132,7 @@ var OrderCreator = /** @class */ (function () {
                         console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
                         if (error_2 instanceof web3_js_1.SendTransactionError) {
                             if (error_2.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()) {
-                                throw new Error("Transaction simulation failed: ".concat(error_2.transactionError.message, " | Logs: ").concat(error_2.getLogs.toString()));
+                                throw new Error("Transaction simulation failed: ".concat(error_2.transactionError.message));
                             }
                         }
                         else {
