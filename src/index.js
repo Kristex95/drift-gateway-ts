@@ -68,12 +68,13 @@ function init() {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
-                    connection_1 = new web3_js_1.Connection(options.rpc);
+                    connection_1 = new web3_js_1.Connection(options.rpc, 'confirmed');
                     wallet = new sdk_1.Wallet((0, sdk_1.loadKeypair)(options.private_key));
                     driftClient_1 = new sdk_1.DriftClient({
                         connection: connection_1,
                         wallet: wallet,
                         programID: new web3_js_1.PublicKey("dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"),
+                        opts: { preflightCommitment: "confirmed", commitment: "confirmed" }
                     });
                     // Subscribe to Drift client events
                     return [4 /*yield*/, driftClient_1.subscribe()];

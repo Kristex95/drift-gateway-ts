@@ -37,7 +37,7 @@ export class OrderCreator{
       console.log(
         `[${logTime}] Placing market order: ${JSON.stringify({
           ...orderParams,
-          baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber()
+          baseAssetAmount: size
         })}`
       );
       const tx = await driftClient.placePerpOrder(orderParams);
@@ -48,9 +48,7 @@ export class OrderCreator{
       const logTime = new Date().toISOString();
       console.error(`[${logTime}] Error placing market order: ${error}`);
       if (error instanceof SendTransactionError) {
-        if(error.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()){
-          throw new Error(`Transaction simulation failed: ${error.transactionError.message}`);
-        }
+        throw new Error(`Transaction simulation failed: ${error.transactionError.message}`);
       } else {
         throw error;
       }
@@ -72,7 +70,7 @@ export class OrderCreator{
       const precision = QUOTE_PRECISION.toNumber();
       console.log(`[${logTime}] Placing limit order: ${JSON.stringify({
         ...orderParams,
-        baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(),
+        baseAssetAmount: size,
         price: orderParams.price.toString() / precision,
         })}`
       );
@@ -84,9 +82,7 @@ export class OrderCreator{
       const logTime = new Date().toISOString();
       console.error(`[${logTime}] Error placing limit order:`, error);
       if (error instanceof SendTransactionError) {
-        if(error.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()){
-          throw new Error(`Transaction simulation failed: ${error.transactionError.message}`);
-        }
+        throw new Error(`Transaction simulation failed: ${error.transactionError.message}`);
       } else {
         throw error;
       }

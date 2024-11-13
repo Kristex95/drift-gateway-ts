@@ -28,7 +28,8 @@ async function init() {
   try {
     // Establish connection to Solana
     const connection = new Connection(
-      options.rpc
+      options.rpc,
+      'confirmed'
     );
 
     const wallet = new Wallet(loadKeypair(options.private_key));
@@ -38,6 +39,7 @@ async function init() {
       connection,
       wallet,
       programID: new PublicKey("dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"),
+      opts: {preflightCommitment: "confirmed", commitment: "confirmed"}
     });
 
     // Subscribe to Drift client events

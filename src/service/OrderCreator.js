@@ -74,7 +74,7 @@ var OrderCreator = /** @class */ (function () {
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         logTime = new Date().toISOString();
-                        console.log("[".concat(logTime, "] Placing market order: ").concat(JSON.stringify(__assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber() }))));
+                        console.log("[".concat(logTime, "] Placing market order: ").concat(JSON.stringify(__assign(__assign({}, orderParams), { baseAssetAmount: size }))));
                         return [4 /*yield*/, driftClient.placePerpOrder(orderParams)];
                     case 2:
                         tx = _a.sent();
@@ -86,9 +86,7 @@ var OrderCreator = /** @class */ (function () {
                         logTime_1 = new Date().toISOString();
                         console.error("[".concat(logTime_1, "] Error placing market order: ").concat(error_1));
                         if (error_1 instanceof web3_js_1.SendTransactionError) {
-                            if (error_1.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()) {
-                                throw new Error("Transaction simulation failed: ".concat(error_1.transactionError.message));
-                            }
+                            throw new Error("Transaction simulation failed: ".concat(error_1.transactionError.message));
                         }
                         else {
                             throw error_1;
@@ -119,7 +117,7 @@ var OrderCreator = /** @class */ (function () {
                         _a.trys.push([1, 3, , 4]);
                         logTime = new Date().toISOString();
                         precision = QUOTE_PRECISION.toNumber();
-                        console.log("[".concat(logTime, "] Placing limit order: ").concat(JSON.stringify(__assign(__assign({}, orderParams), { baseAssetAmount: orderParams.baseAssetAmount.toString() / BASE_PRECISION.toNumber(), price: orderParams.price.toString() / precision }))));
+                        console.log("[".concat(logTime, "] Placing limit order: ").concat(JSON.stringify(__assign(__assign({}, orderParams), { baseAssetAmount: size, price: orderParams.price.toString() / precision }))));
                         return [4 /*yield*/, driftClient.placePerpOrder(orderParams).then()];
                     case 2:
                         tx = _a.sent();
@@ -131,9 +129,7 @@ var OrderCreator = /** @class */ (function () {
                         logTime_2 = new Date().toISOString();
                         console.error("[".concat(logTime_2, "] Error placing limit order:"), error_2);
                         if (error_2 instanceof web3_js_1.SendTransactionError) {
-                            if (error_2.message.toLowerCase() !== TRANSACTION_ALREADY_PROCESSED_MESSAGE.toLowerCase()) {
-                                throw new Error("Transaction simulation failed: ".concat(error_2.transactionError.message));
-                            }
+                            throw new Error("Transaction simulation failed: ".concat(error_2.transactionError.message));
                         }
                         else {
                             throw error_2;
