@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -103,9 +103,9 @@ router.post("/orders", function (req, res) { return __awaiter(void 0, void 0, vo
             case 4: return [3 /*break*/, 6];
             case 5:
                 err_1 = _a.sent();
-                console.log("/orders caught an error:", err_1);
                 errorMessage = err_1 instanceof Error ? err_1.message : String(err_1);
-                singleLineError = JSON.stringify(errorMessage).replace(/\\n/g, ' ');
+                singleLineError = JSON.stringify(errorMessage).replace(/\\n/g, ';');
+                console.log("/orders caught an error:", singleLineError);
                 return [2 /*return*/, res.status(400).send(singleLineError)];
             case 6: return [2 /*return*/];
         }

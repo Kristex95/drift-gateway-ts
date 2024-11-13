@@ -84,9 +84,9 @@ router.post("/orders", async (req, res) => {
       return res.status(200).json({ tx: result });
     }
   } catch (err) {
-    console.log("/orders caught an error:", err);
     const errorMessage = err instanceof Error ? err.message : String(err);
-    const singleLineError = JSON.stringify(errorMessage).replace(/\\n/g, ' ');
+    const singleLineError = JSON.stringify(errorMessage).replace(/\\n/g, ';');
+    console.log("/orders caught an error:", singleLineError);
     return res.status(400).send(singleLineError);
   }
 });
