@@ -53,13 +53,14 @@ function startWebSocketServer(server, connection, driftClient) {
     });
     wss.on("connection", function (ws) {
         var clientId = Date.now();
-        clients.push({ id: clientId, ws: ws, subscribed: false });
+        var client = { id: clientId, ws: ws, subscribed: false, isAlive: true };
+        clients.push(client);
         console.log("Client connected: ".concat(clientId));
         ws.on("error", function (error) {
             console.error("Client ".concat(clientId, " encountered an error:"), error);
         });
         ws.on("message", function (message) {
-            console.log("Received: ".concat(JSON.stringify(message)));
+            client.isAlive = true;
             handleIncomingMessage(message, clientId);
         });
         ws.on("close", function () {
@@ -67,6 +68,20 @@ function startWebSocketServer(server, connection, driftClient) {
             clients = clients.filter(function (client) { return client.id !== clientId; });
         });
     });
+    // Schedule check every 60 seconds
+    setInterval(function () {
+        var now = Date.now();
+        clients.forEach(function (client) {
+            if (!client.isAlive) {
+                console.log("Client ".concat(client.id, " is unresponsive, closing connection."));
+                client.ws.terminate();
+                clients = clients.filter(function (c) { return c.id !== client.id; });
+            }
+            else {
+                client.isAlive = false;
+            }
+        });
+    }, 60000);
     console.log("WebSocket server started.");
 }
 function subscribeToEvent(connection, driftClient) {
@@ -122,6 +137,9 @@ function subscribeToEvent(connection, driftClient) {
 function handleIncomingMessage(message, clientId) {
     try {
         var parsedMessage = JSON.parse(message);
+        if (parsedMessage.method === "ping")
+            return;
+        console.log("Received: ".concat(JSON.stringify(message)));
         if (parsedMessage.method === "subscribe") {
             var client = clients.find(function (client) { return client.id === clientId; });
             if (client) {
