@@ -127,9 +127,9 @@ async function subscribeToEvent(
 function handleIncomingMessage(message: string, clientId: number) {
   try {
     const parsedMessage = JSON.parse(message);
-    if(parsedMessage.method === "ping") return;
+    if(Buffer.isBuffer(message)) return;
 
-    console.log(`Received: ${JSON.stringify(message)}`);
+    console.log(`Received: ${parsedMessage}`);
     if (parsedMessage.method === "subscribe") {
       const client = clients.find(client => client.id === clientId);
       if (client) {
