@@ -137,8 +137,10 @@ function subscribeToEvent(connection, driftClient) {
 function handleIncomingMessage(message, clientId) {
     try {
         var parsedMessage = JSON.parse(message);
-        if (Buffer.isBuffer(message))
+        if (Buffer.isBuffer(message)) {
+            console.log("Received: ".concat(message.toString()));
             return;
+        }
         console.log("Received: ".concat(parsedMessage));
         if (parsedMessage.method === "subscribe") {
             var client = clients.find(function (client) { return client.id === clientId; });
