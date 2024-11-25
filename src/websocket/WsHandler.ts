@@ -20,7 +20,6 @@ interface WebSocketConnection {
   id: number;
   ws: WebSocket;
   subscribed: boolean; // Track subscription status
-  isAlive: boolean; // Track if the connection is alive
 }
 
 let clients: WebSocketConnection[] = [];
@@ -41,8 +40,7 @@ export function startWebSocketServer(
 
   wss.on("connection", (ws: WebSocket) => {
     const clientId = Date.now();
-    const client: WebSocketConnection = { id: clientId, ws, subscribed: false, isAlive: true };
-    clients.push(client);
+    clients.push({ id: clientId, ws, subscribed: false });
 
     console.log(`Client connected: ${clientId}`);
 
@@ -51,7 +49,7 @@ export function startWebSocketServer(
     });  
 
     ws.on("message", (message: string) => {
-      client.isAlive = true;
+      console.log(`Received: ${JSON.stringify(message)}`);
       handleIncomingMessage(message, clientId);
     });
 
@@ -61,19 +59,6 @@ export function startWebSocketServer(
     });
   });
 
-  // Schedule check every 60 seconds
-  setInterval(() => {
-    const now = Date.now();
-    clients.forEach((client) => {
-      if (!client.isAlive) {
-        console.log(`Client ${client.id} is unresponsive, closing connection.`);
-        client.ws.terminate();
-        clients = clients.filter((c) => c.id !== client.id);
-      } else {
-        client.isAlive = false;
-      }
-    });
-  }, 60000);
   console.log("WebSocket server started.");
 }
 
@@ -99,6 +84,7 @@ async function subscribeToEvent(
     options
   );
   await eventSubscriber.subscribe();
+
   eventSubscriber.eventEmitter.on("newEvent", (event) => {
     if (event.eventType == "OrderActionRecord") {
       const orderActionRecord = event as ExtendedOrderActionRecord;
