@@ -59,7 +59,7 @@ var OrderCreator = /** @class */ (function () {
     }
     OrderCreator.placeMarketOrder = function (driftClient, marketIndex, direction, size) {
         return __awaiter(this, void 0, void 0, function () {
-            var orderParams, logTime, tx, logTime, error_1, logTime_1;
+            var orderParams, logTime, tx, error_1, logTime_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -75,7 +75,7 @@ var OrderCreator = /** @class */ (function () {
                         _a.trys.push([1, 3, , 4]);
                         logTime = new Date().toISOString();
                         console.log("[".concat(logTime, "] Placing market order: ").concat(JSON.stringify(__assign(__assign({}, orderParams), { baseAssetAmount: size }))));
-                        return [4 /*yield*/, driftClient.placePerpOrder(orderParams)];
+                        return [4 /*yield*/, driftClient.placePerpOrder(orderParams).then()];
                     case 2:
                         tx = _a.sent();
                         logTime = new Date().toISOString();

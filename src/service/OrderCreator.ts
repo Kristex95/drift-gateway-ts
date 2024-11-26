@@ -40,8 +40,8 @@ export class OrderCreator{
           baseAssetAmount: size
         })}`
       );
-      const tx = await driftClient.placePerpOrder(orderParams);
-      var logTime = new Date().toISOString();
+      const tx = await driftClient.placePerpOrder(orderParams).then();
+      logTime = new Date().toISOString();
       console.log(`[${logTime}] Market order placed. Transaction: ${tx}`);
       return tx;
     } catch (error) {

@@ -49,7 +49,6 @@ export function startWebSocketServer(
     });  
 
     ws.on("message", (message: string) => {
-      console.log(`Received: ${JSON.stringify(message)}`);
       handleIncomingMessage(message, clientId);
     });
 
@@ -113,7 +112,7 @@ async function subscribeToEvent(
 function handleIncomingMessage(message: string, clientId: number) {
   try {
     const parsedMessage = JSON.parse(message);
-    if(Buffer.isBuffer(message)) {
+    if(Buffer.isBuffer(message) && message.toString().includes("heartbeat")) {
       console.log(`Received: ${message.toString()}`);
       return;
     }

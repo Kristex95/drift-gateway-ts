@@ -59,7 +59,6 @@ function startWebSocketServer(server, connection, driftClient) {
             console.error("Client ".concat(clientId, " encountered an error:"), error);
         });
         ws.on("message", function (message) {
-            console.log("Received: ".concat(JSON.stringify(message)));
             handleIncomingMessage(message, clientId);
         });
         ws.on("close", function () {
@@ -122,7 +121,7 @@ function subscribeToEvent(connection, driftClient) {
 function handleIncomingMessage(message, clientId) {
     try {
         var parsedMessage = JSON.parse(message);
-        if (Buffer.isBuffer(message)) {
+        if (Buffer.isBuffer(message) && message.toString().includes("heartbeat")) {
             console.log("Received: ".concat(message.toString()));
             return;
         }
