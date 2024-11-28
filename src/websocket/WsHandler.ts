@@ -132,7 +132,7 @@ function handleIncomingMessage(message: string, clientId: number) {
       return;
     }
 
-    console.log(`Received: ${parsedMessage}`);
+    console.log(`Received: ${parsedMessage.toString()}`);
     if (parsedMessage.method === "subscribe") {
       const client = clients.find(client => client.id === clientId);
       if (client) {

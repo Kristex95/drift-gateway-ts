@@ -1,8 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { router } from './routes/apiRoutes';
-import { Connection ,PublicKey } from "@solana/web3.js";
-import { Wallet, loadKeypair, DriftClient, EventSubscriber, EventSubscriptionOptions } from "@drift-labs/sdk";
+import * as anchor from '@coral-xyz/anchor';
+import { AnchorProvider, Wallet } from '@coral-xyz/anchor';
+import { Connection ,Keypair,PublicKey } from "@solana/web3.js";
+import { loadKeypair, DriftClient, EventSubscriber, EventSubscriptionOptions, initialize, BulkAccountLoader, User } from "@drift-labs/sdk";
 require('dotenv').config();
 import http from 'http';
 import { startWebSocketServer } from './websocket/WsHandler';
@@ -23,29 +25,55 @@ const app = express();
 const server = http.createServer(app);
 app.use(bodyParser.json());
 
-// Initialize DriftClient and attach it to the app
 async function init() {
   try {
-    // Establish connection to Solana
+    const wallet = new Wallet(loadKeypair(options.private_key));
+
+    const env = 'mainnet-beta';
+    const sdkConfig = initialize({ env });
+
     const connection = new Connection(
       options.rpc,
       'confirmed'
     );
-
-    const wallet = new Wallet(loadKeypair(options.private_key));
-
-    // Initialize DriftClient
-    const driftClient = new DriftClient({
+    
+    const provider = new anchor.AnchorProvider(
       connection,
       wallet,
-      programID: new PublicKey("dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"),
-      opts: {preflightCommitment: "confirmed", commitment: "confirmed"}
+      {
+          preflightCommitment: 'confirmed',
+          skipPreflight: false,
+          commitment: 'confirmed',
+      }
+    );
+    
+    const driftPublicKey = new PublicKey(sdkConfig.DRIFT_PROGRAM_ID);
+    const bulkAccountLoader = new BulkAccountLoader(
+      provider.connection,
+      'confirmed',
+      1000
+    );
+    const driftClient = new DriftClient({
+      connection: provider.connection,
+      wallet: provider.wallet,
+      programID: driftPublicKey,
+      accountSubscription: {
+        type: 'polling',
+        accountLoader: bulkAccountLoader,
+      },
     });
-
-    // Subscribe to Drift client events
     await driftClient.subscribe();
-    const user = await driftClient.getUser();
+    
+    const user = new User({
+      driftClient: driftClient,
+      userAccountPublicKey: await driftClient.getUserAccountPublicKey(),
+      accountSubscription: {
+          type: 'polling',
+          accountLoader: bulkAccountLoader,
+      },
+    });
     await user.subscribe();
+    
     app.locals.driftClient = driftClient;
     app.locals.user = user;
     app.locals.connection = connection;
