@@ -1,17 +1,11 @@
 import { WebSocketServer, WebSocket } from "ws";
 import {
-  Wallet,
-  loadKeypair,
   DriftClient,
   EventSubscriber,
   EventSubscriptionOptions,
-  WrappedEvent,
-  OrderAction,
 } from "@drift-labs/sdk";
 import { Connection, PublicKey } from "@solana/web3.js";
 import http from "http";
-import { OrderMessage } from "../types/wsMessage";
-import { OrderRecord, OrderActionRecord } from "@drift-labs/sdk";
 import { OrderActionConverter } from "./OrderActionConverter";
 import { ExtendedOrderActionRecord, ExtendedOrderRecord } from "../types/CustomTypes";
 import { processUpdateOrder } from "../service/UpdateOrderAction";
@@ -48,7 +42,7 @@ export function startWebSocketServer(
 
     ws.on("error", (error) => {
       console.error(`Client ${clientId} encountered an error:`, error);
-    });  
+    });
 
     ws.on("message", (message: string) => {
       client.isAlive = true;
@@ -102,24 +96,21 @@ async function subscribeToEvent(
   eventSubscriber.eventEmitter.on("newEvent", (event) => {
     if (event.eventType == "OrderActionRecord") {
       const orderActionRecord = event as ExtendedOrderActionRecord;
+      if (orderActionRecord.taker?.toString() == userAccountPublicKey || orderActionRecord.maker?.toString() == userAccountPublicKey) {
+        const processedAction = processUpdateOrder(orderActionRecord);
+        if(processedAction == null) return;
         clients.forEach((client) => {
-        if (client.subscribed && (orderActionRecord.taker?.toString() == userAccountPublicKey || orderActionRecord.maker?.toString() == userAccountPublicKey)) {
-          const processedAction = processUpdateOrder(orderActionRecord);
-          if(processedAction == null){
-            return;
-          }
           broadcastMessage(processedAction, client);
-        }
-      });
+        });
+      }
     } else if (event.eventType == "OrderRecord") {
       const orderRecord = event as ExtendedOrderRecord;
-      clients.forEach((client) => {
-        if (client.subscribed && orderRecord.user.toString() == userAccountPublicKey) {
-          const orderRecordResult = OrderActionConverter.OrderCreateAction(orderRecord);
+      if (orderRecord.user.toString() == userAccountPublicKey) {
+        const orderRecordResult = OrderActionConverter.OrderCreateAction(orderRecord);
+        clients.forEach((client) => {
           broadcastMessage(orderRecordResult, client);
-        }
-      });
- 
+        });
+      }
     }
   });
 }

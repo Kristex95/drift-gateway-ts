@@ -106,27 +106,26 @@ function subscribeToEvent(connection, driftClient) {
                 case 1:
                     _a.sent();
                     eventSubscriber.eventEmitter.on("newEvent", function (event) {
+                        var _a, _b;
                         if (event.eventType == "OrderActionRecord") {
-                            var orderActionRecord_1 = event;
-                            clients.forEach(function (client) {
-                                var _a, _b;
-                                if (client.subscribed && (((_a = orderActionRecord_1.taker) === null || _a === void 0 ? void 0 : _a.toString()) == userAccountPublicKey || ((_b = orderActionRecord_1.maker) === null || _b === void 0 ? void 0 : _b.toString()) == userAccountPublicKey)) {
-                                    var processedAction = (0, UpdateOrderAction_1.processUpdateOrder)(orderActionRecord_1);
-                                    if (processedAction == null) {
-                                        return;
-                                    }
-                                    broadcastMessage(processedAction, client);
-                                }
-                            });
+                            var orderActionRecord = event;
+                            if (((_a = orderActionRecord.taker) === null || _a === void 0 ? void 0 : _a.toString()) == userAccountPublicKey || ((_b = orderActionRecord.maker) === null || _b === void 0 ? void 0 : _b.toString()) == userAccountPublicKey) {
+                                var processedAction_1 = (0, UpdateOrderAction_1.processUpdateOrder)(orderActionRecord);
+                                if (processedAction_1 == null)
+                                    return;
+                                clients.forEach(function (client) {
+                                    broadcastMessage(processedAction_1, client);
+                                });
+                            }
                         }
                         else if (event.eventType == "OrderRecord") {
-                            var orderRecord_1 = event;
-                            clients.forEach(function (client) {
-                                if (client.subscribed && orderRecord_1.user.toString() == userAccountPublicKey) {
-                                    var orderRecordResult = OrderActionConverter_1.OrderActionConverter.OrderCreateAction(orderRecord_1);
-                                    broadcastMessage(orderRecordResult, client);
-                                }
-                            });
+                            var orderRecord = event;
+                            if (orderRecord.user.toString() == userAccountPublicKey) {
+                                var orderRecordResult_1 = OrderActionConverter_1.OrderActionConverter.OrderCreateAction(orderRecord);
+                                clients.forEach(function (client) {
+                                    broadcastMessage(orderRecordResult_1, client);
+                                });
+                            }
                         }
                     });
                     return [2 /*return*/];
