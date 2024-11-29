@@ -127,8 +127,10 @@ async function subscribeToEvent(
 function handleIncomingMessage(message: string, clientId: number) {
   try {
     const parsedMessage = JSON.parse(message);
-    if(Buffer.isBuffer(message) && message.toString().includes("heartbeat")) {
-      console.log(`Received: ${message.toString()}`);
+    if(Buffer.isBuffer(message)) {
+      if(!message.toString().includes("heartbeat")){
+        console.log(`ReceivedBuf: ${message.toString()}`);
+      }
       return;
     }
 
