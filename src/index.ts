@@ -10,6 +10,14 @@ import http from 'http';
 import { startWebSocketServer } from './websocket/WsHandler';
 import { Command } from 'commander';
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 const program = new Command();
 program
 .option('--rpc <type>', 'rpcNode')
