@@ -32,12 +32,11 @@ const driftEnv = 'mainnet-beta'
 const stateCommitment = 'confirmed';
 //@ts-ignore
 const sdkConfig = initialize({env: driftEnv});
-const endpoint = process.env.DRIFT_ENDPOINT || 'https://mainnet.helius-rpc.com/?api-key=apiKey';
-const wsEndpoint = process.env.DRIFT_WS_ENDPOINT || 'wss://mainnet.helius-rpc.com/ws?api-key=apiKey';
 
 const program = new Command();
 program
     .option('--rpc <type>', 'rpcNode')
+    .option('--ws_rpc <type>', 'wsRpcNode')
     .option('--host <type>', 'host')
     .option('--port <type>', 'port')
     .option('--ws_port <type>', 'websocket port')
@@ -49,6 +48,9 @@ const options = program.opts();
 const app = express();
 const server = http.createServer(app);
 app.use(bodyParser.json());
+
+const endpoint = options.rpc || 'https://mainnet.helius-rpc.com/?api-key=apiKey';
+const wsEndpoint = options.ws_rpc || 'wss://mainnet.helius-rpc.com/ws?api-key=apiKey';
 
 async function init() {
     try {
