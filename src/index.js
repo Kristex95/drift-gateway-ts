@@ -60,11 +60,10 @@ var driftEnv = 'mainnet-beta';
 var stateCommitment = 'confirmed';
 //@ts-ignore
 var sdkConfig = (0, sdk_1.initialize)({ env: driftEnv });
-var endpoint = process.env.DRIFT_ENDPOINT || 'https://mainnet.helius-rpc.com/?api-key=apiKey';
-var wsEndpoint = process.env.DRIFT_WS_ENDPOINT || 'wss://mainnet.helius-rpc.com/ws?api-key=apiKey';
 var program = new commander_1.Command();
 program
     .option('--rpc <type>', 'rpcNode')
+    .option('--ws_rpc <type>', 'wsRpcNode')
     .option('--host <type>', 'host')
     .option('--port <type>', 'port')
     .option('--ws_port <type>', 'websocket port')
@@ -74,6 +73,8 @@ var options = program.opts();
 var app = (0, express_1.default)();
 var server = http_1.default.createServer(app);
 app.use(body_parser_1.default.json());
+var endpoint = options.rpc || 'https://mainnet.helius-rpc.com/?api-key=apiKey';
+var wsEndpoint = options.ws_rpc || 'wss://mainnet.helius-rpc.com/ws?api-key=apiKey';
 function init() {
     return __awaiter(this, void 0, void 0, function () {
         var accountSubscription, wallet, connection, slotSubscriber_1, slotSource_1, _a, perpMarketInfos_1, spotMarketInfos, oracleInfos, driftClient_1, userMap, dlobProvider, dlobSubscriber_1, WS_PORT, error_1;
