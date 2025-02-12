@@ -60,8 +60,8 @@ var driftEnv = 'mainnet-beta';
 var stateCommitment = 'confirmed';
 //@ts-ignore
 var sdkConfig = (0, sdk_1.initialize)({ env: driftEnv });
-var endpoint = process.env.DRIFT_ENDPOINT || 'https://mainnet.helius-rpc.com/?api-key=cebab30f-0f33-4977-9a9f-6b6831e2ac71';
-var wsEndpoint = process.env.DRIFT_WS_ENDPOINT || 'wss://mainnet.helius-rpc.com/ws?api-key=cebab30f-0f33-4977-9a9f-6b6831e2ac71';
+var endpoint = process.env.DRIFT_ENDPOINT || 'https://mainnet.helius-rpc.com/?api-key=apiKey';
+var wsEndpoint = process.env.DRIFT_WS_ENDPOINT || 'wss://mainnet.helius-rpc.com/ws?api-key=apiKey';
 var program = new commander_1.Command();
 program
     .option('--rpc <type>', 'rpcNode')
