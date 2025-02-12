@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -32,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -65,7 +42,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var apiRoutes_1 = require("./routes/apiRoutes");
-var anchor = __importStar(require("@coral-xyz/anchor"));
 var anchor_1 = require("@coral-xyz/anchor");
 var web3_js_1 = require("@solana/web3.js");
 var sdk_1 = require("@drift-labs/sdk");
@@ -73,12 +49,19 @@ require('dotenv').config();
 var http_1 = __importDefault(require("http"));
 var WsHandler_1 = require("./websocket/WsHandler");
 var commander_1 = require("commander");
+var dlobProvider_1 = require("./dlobProvider");
 process.on('uncaughtException', function (err) {
     console.error('Uncaught Exception:', err);
 });
 process.on('unhandledRejection', function (reason, promise) {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
+var driftEnv = 'mainnet-beta';
+var stateCommitment = 'confirmed';
+//@ts-ignore
+var sdkConfig = (0, sdk_1.initialize)({ env: driftEnv });
+var endpoint = process.env.DRIFT_ENDPOINT || 'https://mainnet.helius-rpc.com/?api-key=cebab30f-0f33-4977-9a9f-6b6831e2ac71';
+var wsEndpoint = process.env.DRIFT_WS_ENDPOINT || 'wss://mainnet.helius-rpc.com/ws?api-key=cebab30f-0f33-4977-9a9f-6b6831e2ac71';
 var program = new commander_1.Command();
 program
     .option('--rpc <type>', 'rpcNode')
@@ -93,62 +76,81 @@ var server = http_1.default.createServer(app);
 app.use(body_parser_1.default.json());
 function init() {
     return __awaiter(this, void 0, void 0, function () {
-        var wallet, env, sdkConfig, connection_1, provider, driftPublicKey, bulkAccountLoader, driftClient_1, user, _a, WS_PORT, error_1;
-        var _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var accountSubscription, wallet, connection, slotSubscriber_1, slotSource_1, _a, perpMarketInfos_1, spotMarketInfos, oracleInfos, driftClient_1, userMap, dlobProvider, dlobSubscriber_1, WS_PORT, error_1;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    _c.trys.push([0, 4, , 5]);
-                    wallet = new anchor_1.Wallet((0, sdk_1.loadKeypair)(options.private_key));
-                    env = 'mainnet-beta';
-                    sdkConfig = (0, sdk_1.initialize)({ env: env });
-                    connection_1 = new web3_js_1.Connection(options.rpc, 'confirmed');
-                    provider = new anchor.AnchorProvider(connection_1, wallet, {
-                        preflightCommitment: 'confirmed',
-                        skipPreflight: false,
-                        commitment: 'confirmed',
+                    _b.trys.push([0, 4, , 5]);
+                    console.log(options);
+                    accountSubscription = void 0;
+                    wallet = new anchor_1.Wallet(new web3_js_1.Keypair());
+                    connection = new web3_js_1.Connection(endpoint, {
+                        wsEndpoint: wsEndpoint,
+                        commitment: stateCommitment,
                     });
-                    driftPublicKey = new web3_js_1.PublicKey(sdkConfig.DRIFT_PROGRAM_ID);
-                    bulkAccountLoader = new sdk_1.BulkAccountLoader(provider.connection, 'confirmed', 1000);
-                    driftClient_1 = new sdk_1.DriftClient({
-                        connection: provider.connection,
-                        wallet: provider.wallet,
-                        programID: driftPublicKey,
-                        accountSubscription: {
-                            type: 'polling',
-                            accountLoader: bulkAccountLoader,
-                        },
-                    });
-                    return [4 /*yield*/, driftClient_1.subscribe()];
-                case 1:
-                    _c.sent();
-                    _a = sdk_1.User.bind;
-                    _b = {
-                        driftClient: driftClient_1
+                    accountSubscription = {
+                        type: 'websocket',
+                        commitment: stateCommitment,
+                        resubTimeoutMs: 30000,
                     };
-                    return [4 /*yield*/, driftClient_1.getUserAccountPublicKey()];
+                    slotSubscriber_1 = new sdk_1.SlotSubscriber(connection, {
+                        resubTimeoutMs: 10000,
+                    });
+                    return [4 /*yield*/, slotSubscriber_1.subscribe()];
+                case 1:
+                    _b.sent();
+                    slotSource_1 = {
+                        getSlot: function () { return slotSubscriber_1.getSlot(); },
+                    };
+                    _a = (0, dlobProvider_1.getMarketsAndOraclesToLoad)(sdkConfig), perpMarketInfos_1 = _a.perpMarketInfos, spotMarketInfos = _a.spotMarketInfos, oracleInfos = _a.oracleInfos;
+                    driftClient_1 = new sdk_1.DriftClient({
+                        connection: connection,
+                        wallet: wallet,
+                        env: driftEnv,
+                        accountSubscription: accountSubscription,
+                        perpMarketIndexes: perpMarketInfos_1.map(function (m) { return m.marketIndex; }),
+                        spotMarketIndexes: spotMarketInfos.map(function (m) { return m.marketIndex; }),
+                        oracleInfos: oracleInfos,
+                    });
+                    driftClient_1.eventEmitter.on('error', function (e) {
+                        console.info('clearing house error');
+                        console.error(e);
+                    });
+                    userMap = new sdk_1.UserMap({
+                        driftClient: driftClient_1,
+                        subscriptionConfig: {
+                            type: 'websocket',
+                            resubTimeoutMs: 30000,
+                            commitment: stateCommitment,
+                        },
+                        skipInitialLoad: false,
+                        includeIdle: false,
+                    });
+                    dlobProvider = (0, dlobProvider_1.getDLOBProviderFromUserMap)(userMap);
+                    return [4 /*yield*/, dlobProvider.subscribe()];
                 case 2:
-                    user = new (_a.apply(sdk_1.User, [void 0, (_b.userAccountPublicKey = _c.sent(),
-                            _b.accountSubscription = {
-                                type: 'polling',
-                                accountLoader: bulkAccountLoader,
-                            },
-                            _b)]))();
-                    return [4 /*yield*/, user.subscribe()];
+                    _b.sent();
+                    console.log('subscribed to dlob provider');
+                    dlobSubscriber_1 = new sdk_1.DLOBSubscriber({
+                        driftClient: driftClient_1,
+                        dlobSource: dlobProvider,
+                        slotSource: slotSource_1,
+                        updateFrequency: 1000,
+                    });
+                    return [4 /*yield*/, dlobSubscriber_1.subscribe()];
                 case 3:
-                    _c.sent();
+                    _b.sent();
                     app.locals.driftClient = driftClient_1;
-                    app.locals.user = user;
-                    app.locals.connection = connection_1;
+                    app.locals.connection = connection;
                     console.log("Successfully subscribed to DriftClient.");
                     WS_PORT = options.ws_port || process.env.WS_PORT || 3001;
                     server.listen(WS_PORT, function () {
-                        (0, WsHandler_1.startWebSocketServer)(server, connection_1, driftClient_1);
+                        (0, WsHandler_1.startWebSocketServer)(server, driftClient_1, dlobSubscriber_1, slotSource_1, perpMarketInfos_1);
                         console.log("Websocket is running on port ".concat(WS_PORT));
                     });
                     return [3 /*break*/, 5];
                 case 4:
-                    error_1 = _c.sent();
+                    error_1 = _b.sent();
                     console.error("Error initializing DriftClient:", error_1);
                     return [3 /*break*/, 5];
                 case 5: return [2 /*return*/];

@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -42,15 +42,12 @@ var ws_1 = require("ws");
 var sdk_1 = require("@drift-labs/sdk");
 var OrderActionConverter_1 = require("./OrderActionConverter");
 var UpdateOrderAction_1 = require("../service/UpdateOrderAction");
+var dimensions = Math.pow(10, 6);
 var clients = [];
 var userAccountPublicKey;
 // Function to initialize WebSocket server
-function startWebSocketServer(server, connection, driftClient) {
-    subscribeToEvent(connection, driftClient);
+function startWebSocketServer(server, driftClient, dlobSubscriber, slotSource, perpMarketInfos) {
     var wss = new ws_1.WebSocketServer({ server: server });
-    driftClient.getUserAccountPublicKey().then(function (result) {
-        userAccountPublicKey = String(result);
-    });
     wss.on("connection", function (ws) {
         var clientId = Date.now();
         var client = { id: clientId, ws: ws, subscribed: false, isAlive: true };
@@ -66,6 +63,46 @@ function startWebSocketServer(server, connection, driftClient) {
         ws.on("close", function () {
             console.log("Client disconnected: ".concat(clientId));
             clients = clients.filter(function (client) { return client.id !== clientId; });
+        });
+    });
+    dlobSubscriber.eventEmitter.on('update', function (dlob) {
+        var slot = slotSource.getSlot();
+        perpMarketInfos.forEach(function (market) {
+            var oracleDataAndSlot = driftClient.getOracleDataForPerpMarket(market.marketIndex);
+            var l2 = dlob.getL2({
+                marketIndex: market.marketIndex,
+                marketType: sdk_1.MarketType.PERP,
+                slot: slot,
+                oraclePriceData: oracleDataAndSlot,
+                depth: 100,
+            });
+            var bids = [];
+            var asks = [];
+            //  console.info(`market name: ${market.marketName} idx: ${market.marketIndex} `);
+            for (var _i = 0, _a = l2.bids; _i < _a.length; _i++) {
+                var bid = _a[_i];
+                bids.push({ price: bid.price.toNumber() / dimensions, size: bid.size.toNumber() / dimensions });
+            }
+            for (var _b = 0, _c = l2.asks; _b < _c.length; _b++) {
+                var ask = _c[_b];
+                asks.push({ price: ask.price.toNumber() / dimensions, size: ask.size.toNumber() / dimensions });
+            }
+            if (bids.length > 0 && asks.length > 0) {
+                var ob_1 = { bids: bids, asks: asks, name: market.marketName };
+                clients.forEach(function (client) {
+                    var logTime = new Date().toISOString();
+                    var jsonMessage = JSON.stringify({
+                        data: ob_1,
+                        channel: "orders",
+                        slot: slot,
+                    });
+                    if (client.ws.readyState === ws_1.WebSocket.OPEN) {
+                        console.log("".concat(logTime, " sent: ").concat(JSON.stringify(jsonMessage)));
+                        client.ws.send(jsonMessage);
+                    }
+                });
+                // console.log(market.marketName, asks, bids)
+            }
         });
     });
     // Schedule check every 60 seconds
